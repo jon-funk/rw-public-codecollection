@@ -27,7 +27,7 @@ jobs:
           git checkout -b "automatic-changelog-update"
 
           # Run the semver-it script
-          ./.github/scripts/semver-it.sh VERSION CHANGELOG '(Feat|Add)'
+          ./.github/scripts/semver-it.sh VERSION CHANGELOG.md '(Feat|Add)'
           if [ $? -eq 0 ]; then
             most_recent_tag=$(git describe --tags --abbrev=0)
             echo "Found most recent tag from semver it as $most_recent_tag"
@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi 
 
-          git add CHANGELOG
+          git add CHANGELOG.md
           # Test if any git changes are made. If not, bail out and send instruction. 
           if [ -z "$(git diff-index HEAD)" ] 
           then 
