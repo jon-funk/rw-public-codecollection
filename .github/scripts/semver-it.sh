@@ -58,8 +58,9 @@ function main (){
     # fi
     if [ "$skip_changelog" -eq 0 ]; then
         last_tag_hash=$(git rev-list -n 1 "$previous_tag")
-        if [ -z $most_recent_tag ]; then
+        if [ -z $last_tag_hash ]; then
             echo "Could not find a last tag hash with: git rev-list -n 1 "$previous_tag""
+            exit 1
         else
             echo "found last tag hash: $last_tag_hash"
         fi
