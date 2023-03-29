@@ -7,9 +7,6 @@ on:
     paths: 
       - "VERSION"
 
-permissions:
-  pull-requests: write
-
 jobs:
   semver-it:
     runs-on: ubuntu-latest
