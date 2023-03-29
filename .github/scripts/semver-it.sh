@@ -56,6 +56,7 @@ function main (){
     # fi
     if [ "$skip_changelog" -eq 0 ]; then
         last_tag_hash=$(git rev-list -n 1 "$previous_tag")
+        echo "found last tag hash: $last_tag_hash"
         # we format in the - for markdown
         commit_message_aggregate="$(git log --pretty=format:"- %s %h" --no-merges "${last_tag_hash}..HEAD" | grep -E "$changelog_pattern")"
         changelog_entry="## ${new_version} ${current_date} $(echo -e "\n${commit_message_aggregate}\n")"
