@@ -40,6 +40,8 @@ function main (){
     changelog_filename=$2
     new_version="$(cat $version_filename)"
     new_tag="v$new_version"
+    # get the last tag value from a diff on the version file
+    # we pull from the file so that we're not affected by devs pushing patch tags in between
     previous_version=$(git log -p -1 $version_filename | grep ^- | tail -n 1 | sed 's/\-//')
     previous_tag="v$previous_version"
     current_date=$(date +%Y-%m-%d)
@@ -63,7 +65,7 @@ function main (){
         fi
         # we format in the - for markdown
         commit_message_aggregate="$(git log --pretty=format:"- %s %h" --no-merges "${last_tag_hash}..HEAD" | grep -E "$changelog_pattern")"
-        changelog_entry="## ${new_version} ${current_date} $(echo -e "\n${commit_message_aggregate}\n")"
+        changelog_entry="## ${new_version} ${current_date}$(echo -e "\n${commit_message_aggregate}\n")"
         echo "changelog entry:"
         echo -e "${changelog_entry}"
         echo -e "${changelog_entry}\n" | cat - $changelog_filename > $temp_file_path && mv $temp_file_path $changelog_filename
