@@ -16,7 +16,10 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Fetch All Tags
-        run: git fetch --tags origin
+        run: |
+          git fetch --tags origin
+          # show all known tags
+          git tag
       - name: Create Semver Tag and Changelog Entry
         run: | 
           git config --global user.email "${GITHUB_ACTOR}"
