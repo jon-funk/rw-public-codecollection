@@ -2,7 +2,24 @@
 # ======================================================================================
 # Synopsis: script for managing the semver tags in a repo by referencing a file's contents.
 #           If a changelog filename is provided then it will be written to.
+
+function semver_it_help (){
+    echo "
+semver-it help
+
+Usage: ./semver-it.sh <path_to_version_file> <path_to_changelog_file>
+
+Examples:
+    semantic version for newest version and generate a new changelog entry containing all git log lines with 'Feat' or 'Add' since the previous tag
+    ./semver-it.sh ../../VERSION ../../CHANGELOG '(Feat|Add)'
+"
+}
+
 function main (){
+    if [ $1 == "help" ]; then
+        semver_it_help
+        exit 0
+    fi
     skip_changelog=0
     temp_file_path="/tmp/temp_changelog"
     if [ -z "$1" ]; then
@@ -18,6 +35,7 @@ function main (){
     else
         changelog_pattern=$3
     fi
+    echo "changelog entry pattern set to: $changelog_pattern"
     version_filename=$1
     changelog_filename=$2
     new_version="$(cat $version_filename)"
@@ -29,6 +47,7 @@ function main (){
         echo "No previous tag found - skipping changelog generation"
         skip_changelog=1
     fi
+    # TODO: add new_semver > last_semver check
     # TODO: handle edge case when tag is subset of another tag, eg: 1.0.1 =/= 1.0.10
     # tag_in_changelog=$(grep "$new_tag" $changelog_filename)
     # if [ -n "$tag_in_changelog" ]; then
@@ -53,7 +72,8 @@ function main (){
         echo "A changelog entry was added, you may now commit the change and version control it"
     fi
 
+    echo "Creating git tag $new_tag, you may now push it to remote"
     git tag $new_tag
-    echo "Created git tag $new_tag, you may now push it to remove"
+    return $?
 }
 main "$@"
