@@ -109,8 +109,8 @@ if __name__ == '__main__':
 
     # Add arguments to the parser
     parser.add_argument('config', help='The yaml config file containing the list of git URLs to clone and parse')
-    parser.add_argument('--readme_header', default="../../readme_header.md", help='The filepath to the header content file to be placed at the top of the readme',)
-    parser.add_argument('--readme', default="../../README.md", help='The readme filepath to write the resulting content to')
+    parser.add_argument('--readme_header', default="readme_header.md", help='The filepath to the header content file to be placed at the top of the readme',)
+    parser.add_argument('--readme', default="README.md", help='The readme filepath to write the resulting content to')
 
     # Parse the arguments
     args = parser.parse_args()
