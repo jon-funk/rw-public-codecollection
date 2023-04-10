@@ -63,23 +63,42 @@ def parse_codebundles(codebundle_filepaths: list[str]) -> dict:
 def organize_results(repo_mapping: dict, codebundle_paths: list[str], parse_results: dict) -> list:
     organized_results = []
     branch = "main"
-    for cb_name, cb_data in parse_results.items():
-        path_parts = cb_name.split("/")
+    # TODO: confirm if the collection docs are hosted in gitbook
+    runwhen_docs_url_base = "https://docs.runwhen.com/public/v/codebundles"
+    for cb_filepath, cb_data in parse_results.items():
+        path_parts = cb_filepath.split("/")
         repo_name = path_parts[2]
         repo_url = repo_mapping[repo_name]
         cb_path = "/".join(path_parts[-3:])
+        cb_docs = cb_data["doc"].replace("\n"," ")
         name = path_parts[-2]
+        runwhen_docs_url = f"{runwhen_docs_url_base}/{name}"
         supports = ", ".join([f"`{name.split('-')[0]}`"]) # eg: gets ['k8s'] for k8s codebundles
         metadata = cb_data["metadata"]
         if "Canonical Name" in metadata:
             name = metadata["Canonical Name"]
         if "Supports" in metadata:
             supports = ", ".join([f"`{support_val.strip()}`" for support_val in metadata["Supports"].split(",")])
+        tasks = [task["name"] for task in cb_data["tasks"]]
+        tasks = ", ".join([f"`{task_name.strip()}`" for task_name in tasks])
         repo_file_url = f"{repo_url.removesuffix('.git')}/blob/{branch}/{cb_path}"
         linked_name = f"[{name}]({repo_file_url})"
-        current_result = [linked_name, supports,cb_data["doc"]]
+        linked_docs = f"{cb_docs} [Docs]({runwhen_docs_url})"
+        current_result = [linked_name, supports, tasks, linked_docs]
         organized_results.append(current_result)
     return organized_results
+
+def create_codebundle_table(codebundle_data: list) -> str:
+    table_data: str = ""
+    for codebundle_row in codebundle_data:
+        codebundle_text = " | ".join(codebundle_row)
+        table_data += (f"| {codebundle_text} |\n")
+    table: str = f"""## Codebundle Index
+| Name | Supported Integrations | Tasks | Documentation |
+|---|---|---|---|
+{table_data}
+"""
+    return table
 
 if __name__ == '__main__':
     # Create the parser
@@ -115,14 +134,11 @@ if __name__ == '__main__':
     readme_header_content: str = ""
     with open(args.readme_header, 'r') as header_file:
         readme_header_content = header_file.read()
-    print(f"readme header: {readme_header_content}")
 
     organized_results: dict = organize_results(index_config["repos"], codebundle_path_list, parse_results)
-    print(organized_results)
 
-    # table_content: str = create_codebundle_table(parse_results)
+    table_content: str = create_codebundle_table(organized_results)
 
-    # readme_content: str = f"{readme_header_content}"
-    # with open(args.readme, 'w') as readme_file:
-    #     readme_file.write(readme_content)
-
+    readme_content: str = f"{readme_header_content}\n{table_content}"
+    with open(args.readme, 'w') as readme_file:
+        readme_file.write(readme_content)
