@@ -1,4 +1,5 @@
 import argparse, yaml, subprocess, os, logging
+from collections import OrderedDict
 from robot.api import TestSuite
 # pip install robotframework
 
@@ -21,10 +22,6 @@ def clone_repos(repo_urls: list[str]) -> list[str]:
     return tmp_dir_list
 
 def get_codebundle_paths(root_repo_filepaths: list[str], search_patterns: dict) -> dict[str,str]:
-    """
-    Returns a list of absolute filepaths for all files in the specified
-    directory (and its subdirectories) that match the specified pattern.
-    """
     matching_filepaths = {}
     for search_dir, filename_pattern in search_patterns.items():
         for repo_path in root_repo_filepaths:
@@ -57,11 +54,13 @@ def parse_codebundles(codebundle_filepaths: list[str]) -> dict:
         try:
             parse_data[cb_path] = parse_codebundle(cb_path)
         except Exception as e:
-            logger.warning(f"Unable to parse codebundle due to: {e}")
+            logger.warning(f"Unable to parse codebundle at {cb_path} due to: {e}")
     return parse_data
 
 def organize_results(repo_mapping: dict, codebundle_paths: list[str], parse_results: dict) -> list:
     organized_results = []
+    # store in named results to alphabetize at end
+    named_results = {}
     branch = "main"
     # TODO: confirm if the collection docs are hosted in gitbook
     runwhen_docs_url_base = "https://docs.runwhen.com/public/v/codebundles"
@@ -85,7 +84,11 @@ def organize_results(repo_mapping: dict, codebundle_paths: list[str], parse_resu
         linked_name = f"[{name}]({repo_file_url})"
         linked_docs = f"{cb_docs} [Docs]({runwhen_docs_url})"
         current_result = [linked_name, supports, tasks, linked_docs]
-        organized_results.append(current_result)
+        named_results[name] = current_result
+        named_results = OrderedDict(sorted(named_results.items()))
+    # iterate through alphebetically ordered dict
+    for key_name, row_data in named_results.items():
+        organized_results.append(row_data)
     return organized_results
 
 def create_codebundle_table(codebundle_data: list) -> str:
